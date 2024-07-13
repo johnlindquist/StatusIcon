@@ -37,7 +37,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusBarItem?.button {
             button.image = NSImage(systemSymbolName: icon, accessibilityDescription: icon)
             button.image?.isTemplate = true
+            button.action = #selector(statusBarButtonClicked)
+            button.target = self
         }
+        
+        statusBarItem?.menu = createMenu()
+    }
+    
+    func createMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
+        return menu
+    }
+    
+    @objc func quitApp() {
+        NSApplication.shared.terminate(nil)
+    }
+    
+    @objc func statusBarButtonClicked() {
+        statusBarItem?.button?.performClick(nil)
     }
     
     func setupFileWatcher() {
@@ -81,10 +99,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             let contents = try String(contentsOf: url, encoding: .utf8)
             let trimmedContents = contents.trimmingCharacters(in: .whitespacesAndNewlines)
-            updateStatusBarIcon(with: trimmedContents)
+            
+            if trimmedContents.isEmpty {
+                hideStatusBarIcon()
+            } else {
+                showStatusBarIcon()
+                updateStatusBarIcon(with: trimmedContents)
+            }
         } catch {
             print("Error reading file: \(error)")
         }
+    }
+    
+    func hideStatusBarIcon() {
+        statusBarItem?.isVisible = false
+    }
+    
+    func showStatusBarIcon() {
+        statusBarItem?.isVisible = true
     }
     
     func updateStatusBarIcon(with symbolName: String) {

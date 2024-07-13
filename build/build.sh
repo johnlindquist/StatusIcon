@@ -19,8 +19,8 @@ mv .build/release/StatusIcon build/StatusIcon.app/Contents/MacOS/
 # Copy Info.plist
 cp build/Info.plist build/StatusIcon.app/Contents/
 
-# Optional: Copy icon file (uncomment if you have an icon)
-# cp build/AppIcon.icns build/StatusIcon.app/Contents/Resources/
+# TODO: Copy icon file
+# cp Resources/StatusIcon.icns build/StatusIcon.app/Contents/Resources/
 
 # Move app to Applications
 sudo mv build/StatusIcon.app /Applications/

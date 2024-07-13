@@ -15,7 +15,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "StatusIcon",
-            dependencies: []
+            dependencies: [],
+            exclude: ["README.md"]
         )
     ]
 )
