@@ -1,5 +1,9 @@
 import Cocoa
 import SwiftUI
+import Carbon
+
+typealias EventHandlerRef = OpaquePointer
+typealias EventHotKeyRef = OpaquePointer
 
 @main
 struct StatusBarApp: App {
@@ -15,11 +19,14 @@ struct StatusBarApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     var fileWatcher: DispatchSourceFileSystemObject?
+    var eventHandler: EventHandlerRef?
+    var hotKeyRef: EventHotKeyRef?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         let icon = parseCommandLineArguments()
         createStatusBarItem(icon: icon)
         setupFileWatcher()
+        setupHotKey()
     }
     
     func parseCommandLineArguments() -> String {
@@ -124,5 +131,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)
             button.image?.isTemplate = true
         }
+    }
+
+    func setupHotKey() {
+        var gMyHotKeyID = EventHotKeyID()
+        gMyHotKeyID.id = 1
+        gMyHotKeyID.signature = OSType(fourCharCode: "MYHT")
+
+        var eventType = EventTypeSpec()
+        eventType.eventClass = OSType(kEventClassKeyboard)
+        eventType.eventKind = OSType(kEventHotKeyPressed)
+
+        // Install handler
+        InstallEventHandler(GetApplicationEventTarget(), { (nextHandler, theEvent, userData) -> OSStatus in
+            let appDelegate = unsafeBitCast(userData, to: AppDelegate.self)
+            appDelegate.toggleStatusBarIcon()
+            return noErr
+        }, 1, &eventType, Unmanaged.passUnretained(self).toOpaque(), &eventHandler)
+
+        // Register hot key (Cmd+4)
+        RegisterEventHotKey(UInt32(kVK_ANSI_4), UInt32(cmdKey), gMyHotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef)
+    }
+
+    func toggleStatusBarIcon() {
+        if let isVisible = statusBarItem?.isVisible {
+            statusBarItem?.isVisible = !isVisible
+        }
+    }
+
+    func cleanupHotKey() {
+        if let eventHandler = eventHandler {
+            RemoveEventHandler(eventHandler)
+        }
+        if let hotKeyRef = hotKeyRef {
+            UnregisterEventHotKey(hotKeyRef)
+        }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        cleanupHotKey()
     }
 }
