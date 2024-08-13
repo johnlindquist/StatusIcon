@@ -46,12 +46,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func createMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Settings", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
         return menu
     }
     
     @objc func quitApp() {
         NSApplication.shared.terminate(nil)
+
+@objc func openSettings() {
+    // Placeholder for opening settings
+    print("Settings menu item clicked")
+}
     }
     
     @objc func statusBarButtonClicked() {
